@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>API Security Suite</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+
+            <div class="brand-icon">
+                ⚡
+            </div>
+
+            <div>
+                <h2>SentraScan</h2>
+                <span>API Security Suite</span>
+            </div>
+
+        </div>
+
+
+        <nav class="navigation">
+
+            <button class="nav-item active" onclick="showSection('dashboard')">
+                <span>▦</span>
+                Dashboard
+            </button>
+
+            <button class="nav-item" onclick="showSection('newScan')">
+                <span>⊙</span>
+                New Scan
+            </button>
+
+            <button class="nav-item" onclick="showSection('findings')">
+                <span>⚠</span>
+                Findings
+            </button>
+
+            <button class="nav-item" onclick="showSection('endpoints')">
+                <span>⇄</span>
+                Endpoints
+            </button>
+
+            <button class="nav-item" onclick="showSection('reports')">
+                <span>▤</span>
+                Reports
+            </button>
+
+            <button class="nav-item" onclick="showSection('settings')">
+                <span>⚙</span>
+                Settings
+            </button>
+
+        </nav>
+
+
+        <div class="sidebar-bottom">
+
+            <div class="scanner-status">
+                <span class="online-dot"></span>
+
+                <div>
+                    <strong>Scanner online</strong>
+                    <small>Ready for security testing</small>
+                </div>
+            </div>
+
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <!-- HEADER -->
+        <header class="topbar">
+
+            <div>
+                <h1 id="pageTitle">Security Dashboard</h1>
+
+                <p id="pageSubtitle">
+                    Automated API security assessment
+                </p>
+            </div>
+
+
+            <div class="top-actions">
+
+                <div class="search-box">
+
+                    <span>⌕</span>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search scans, findings..."
+                        oninput="searchDashboard()"
+                    >
+
+                </div>
+
+                <div class="profile">
+                    A
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ================= DASHBOARD ================= -->
+
+        <section id="dashboard" class="page-section active-section">
+
+            <!-- TARGET -->
+            <div class="target-panel">
+
+                <div class="target-label">
+                    Target Endpoint
+                </div>
+
+                <div class="target-row">
+
+                    <input
+                        type="text"
+                        id="dashboardapiUrl"
+                        value="http://127.0.0.1:5001/api/users"
+                        placeholder="Enter API endpoint"
+                    >
+
+                    <button
+                        class="scan-button"
+                        onclick="scanAPI()"
+                        id="scanButton"
+                    >
+                        ▶ &nbsp; Scan API
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- ERROR -->
+            <div id="errorBox" class="error-box"></div>
+
+
+            <!-- LOADING -->
+            <div id="loadingBox" class="loading-box">
+
+                <div class="spinner"></div>
+
+                <span>
+                    Scanning API and running security checks...
+                </span>
+
+            </div>
+
+
+            <!-- SUMMARY CARDS -->
+            <div class="summary-grid">
+
+                <div class="summary-card high-card">
+
+                    <div class="card-title">
+                        <span class="severity-line high-line"></span>
+                        High
+                    </div>
+
+                    <div
+                        class="card-number"
+                        id="highCount"
+                    >
+                        0
+                    </div>
+
+                    <div class="card-description">
+                        critical issues
+                    </div>
+
+                </div>
+
+
+                <div class="summary-card medium-card">
+
+                    <div class="card-title">
+                        <span class="severity-line medium-line"></span>
+                        Medium
+                    </div>
+
+                    <div
+                        class="card-number"
+                        id="mediumCount"
+                    >
+                        0
+                    </div>
+
+                    <div class="card-description">
+                        warnings active
+                    </div>
+
+                </div>
+
+
+                <div class="summary-card low-card">
+
+                    <div class="card-title">
+                        <span class="severity-line low-line"></span>
+                        Low
+                    </div>
+
+                    <div
+                        class="card-number"
+                        id="lowCount"
+                    >
+                        0
+                    </div>
+
+                    <div class="card-description">
+                        minor findings
+                    </div>
+
+                </div>
+
+
+                <div class="summary-card info-card">
+
+                    <div class="card-title">
+                        <span class="severity-line info-line"></span>
+                        Informational
+                    </div>
+
+                    <div
+                        class="card-number"
+                        id="infoCount"
+                    >
+                        0
+                    </div>
+
+                    <div class="card-description">
+                        hardening tips
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FINDINGS + CHART -->
+            <div class="content-grid">
+
+
+                <!-- FINDINGS -->
+                <div class="panel findings-panel">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <h2>Security Findings</h2>
+
+                            <span id="findingTotal">
+                                0 total
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="findings-table-container">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Severity</th>
+                                    <th>Check</th>
+                                    <th>Issue</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="findingsTable">
+
+                                <tr>
+                                    <td colspan="3" class="empty">
+                                        Run a scan to see security findings.
+                                    </td>
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CHART -->
+                <div class="panel chart-panel">
+
+                    <h2>Findings by severity</h2>
+
+                    <div class="donut-wrapper">
+
+                        <div class="donut" id="severityDonut">
+
+                            <div class="donut-center">
+
+                                <strong id="totalFindingNumber">
+                                    0
+                                </strong>
+
+                                <span>findings</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="legend">
+
+                        <div>
+                            <span class="legend-dot medium-dot"></span>
+                            Medium
+                            <strong id="legendMedium">0</strong>
+                        </div>
+
+                        <div>
+                            <span class="legend-dot low-dot"></span>
+                            Low
+                            <strong id="legendLow">0</strong>
+                        </div>
+
+                        <div>
+                            <span class="legend-dot info-dot"></span>
+                            Info
+                            <strong id="legendInfo">0</strong>
+                        </div>
+
+                        <div>
+                            <span class="legend-dot high-dot"></span>
+                            High
+                            <strong id="legendHigh">0</strong>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- BOTTOM STATS -->
+            <div class="bottom-stats">
+
+                <div>
+                    <span>Response Time</span>
+                    <strong id="responseTime">
+                        --
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Status</span>
+                    <strong id="statusCode">
+                        --
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Last Scan</span>
+                    <strong id="lastScan">
+                        No scans yet
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Total Scans</span>
+                    <strong id="totalScans">
+                        0
+                    </strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+<!-- ================= NEW SCAN ================= -->
+
+<section id="newScan" class="page-section">
+
+    <div class="page-heading">
+
+
+    </div>
+
+
+    <!-- NEW SCAN CARD -->
+
+    <div class="new-scan-card">
+
+        <div class="scan-card-header">
+
+            <div>
+                <h3>API Security Scanner</h3>
+
+                <p>
+                    Enter the API endpoint you want to test.
+                </p>
+            </div>
+
+            <div class="scan-status">
+                <span class="status-dot"></span>
+                Ready
+            </div>
+
+        </div>
+
+
+        <!-- API URL -->
+
+        <div class="form-group">
+
+            <label for="apiUrl">
+                API Endpoint URL
+            </label>
+
+            <input
+                type="text"
+                id="apiUrl"
+                placeholder="http://127.0.0.1:5001/api/users"
+                autocomplete="off">
+
+            <small>
+                Example:
+                http://127.0.0.1:5001/api/users
+            </small>
+
+        </div>
+
+
+        <!-- AUTHENTICATION -->
+
+        <div class="form-group">
+
+            <label for="authentication">
+                Authentication
+            </label>
+
+            <select
+                id="authentication"
+                onchange="toggleAuthenticationFields()">
+
+                <option value="none">
+                    No Authentication
+                </option>
+
+                <option value="bearer">
+                    Bearer Token
+                </option>
+
+                <option value="api_key">
+                    API Key
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- BEARER TOKEN -->
+
+        <div
+            class="form-group authentication-field"
+            id="bearerAuthGroup"
+            style="display: none;">
+
+            <label for="bearerToken">
+                Bearer Token
+            </label>
+
+            <input
+                type="password"
+                id="bearerToken"
+                placeholder="Enter bearer token"
+                autocomplete="off">
+
+            <small>
+                Authorization token used to access the API.
+            </small>
+
+        </div>
+
+
+        <!-- API KEY -->
+
+        <div
+            class="form-group authentication-field"
+            id="apiKeyAuthGroup"
+            style="display: none;">
+
+            <label for="apiKey">
+                API Key
+            </label>
+
+            <input
+                type="password"
+                id="apiKey"
+                placeholder="Enter API key"
+                autocomplete="off">
+
+            <small>
+                API key used for authentication.
+            </small>
+
+        </div>
+
+
+        <!-- SCAN BUTTON -->
+
+        <button
+            type="button"
+            id="newScanButton"
+            class="start-scan-button"
+            onclick="startNewScan()">
+
+            <span class="scan-icon">⚡</span>
+
+            Start Security Scan
+
+        </button>
+
+
+        <!-- LOADING -->
+
+        <div
+            id="loadingBox"
+            class="scan-loading"
+            style="display: none;">
+
+            <div class="loading-spinner"></div>
+
+            <div>
+
+                <strong>
+                    Scanning API...
+                </strong>
+
+                <p>
+                    Running security checks. Please wait.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- ERROR -->
+
+        <div
+            id="errorBox"
+            class="scan-error"
+            style="display: none;">
+
+            <strong>
+                Scan Error
+            </strong>
+
+            <p id="errorMessage"></p>
+
+        </div>
+
+
+        <!-- INFORMATION -->
+
+        <div class="scan-info">
+
+            <strong>Security checks include:</strong>
+
+            
+<div class="scan-checks">
+
+    <span id="scanSecurityHeaders">✓ Security Headers</span>
+
+    <span id="scanHttpMethods">✓ HTTP Methods</span>
+
+    <span id="scanAuthentication">✓ Authentication</span>
+
+    <span id="scanInputValidation">✓ Input Validation</span>
+
+    <span id="scanErrorDisclosure">✓ Error Messages</span>
+
+    <span id="scanSensitiveData">✓ Sensitive Data</span>
+
+</div>
+
+        </div>
+
+    </div>
+
+
+
+</section>
+<!-- ================= FINDINGS ================= -->
+
+        <section id="findings" class="page-section">
+
+            <div class="page-heading">
+
+
+            </div>
+
+
+            <div class="panel full-panel">
+
+                <div class="findings-table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Severity</th>
+                                <th>Category</th>
+                                <th>Check</th>
+                                <th>Message</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="allFindingsTable">
+
+                            <tr>
+                                <td colspan="4" class="empty">
+                                    No findings available.
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= ENDPOINTS ================= -->
+
+        <section id="endpoints" class="page-section">
+
+            <div class="page-heading">
+
+            </div>
+
+
+            <div class="panel full-panel">
+
+                <div id="endpointContent">
+
+                    <div class="empty-large">
+                        Run scans to populate endpoint information.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= REPORTS ================= -->
+
+        <section id="reports" class="page-section">
+
+            <div class="page-heading">
+
+
+            </div>
+
+
+            <div class="panel full-panel">
+
+                <div class="reports-header">
+
+                    <strong>
+                        Scan History
+                    </strong>
+
+                    <span id="reportsTotal">
+                        0 scans
+                    </span>
+
+                </div>
+
+
+                <div class="findings-table-container">
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+                                <th>Scan ID</th>
+                                <th>Date</th>
+                                <th>Target</th>
+                                <th>Status</th>
+                                <th>High</th>
+                                <th>Medium</th>
+                                <th>Action</th>
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="reportsTable">
+
+                            <tr>
+                                <td colspan="7" class="empty">
+                                    Loading reports...
+                                </td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+       <!-- ================= SETTINGS ================= -->
+
+<section id="settings" class="page-section">
+
+    <div class="page-heading">
+
+
+    </div>
+
+
+    <div class="settings-grid">
+
+        <!-- ================= SECURITY SCANNERS ================= -->
+
+        <div class="setting-card">
+
+            <h3>Security Scanners</h3>
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingSecurityHeaders"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Security Headers
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingAuthentication"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Authentication
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingHttpMethods"
+                    checked
+                    onchange="saveSettings()"
+                >
+                HTTP Methods
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingInputValidation"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Input Validation
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingErrorDisclosure"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Error Disclosure
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingSensitiveData"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Sensitive Data
+            </label>
+
+        </div>
+
+
+        <!-- ================= DASHBOARD ================= -->
+
+        <div class="setting-card">
+
+            <h3>Dashboard</h3>
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingFindingsChart"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Show Findings Chart
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingScanHistory"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Show Scan History
+            </label>
+
+
+            <label>
+                <input
+                    type="checkbox"
+                    id="settingResponseTime"
+                    checked
+                    onchange="saveSettings()"
+                >
+                Show Response Time
+            </label>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= SETTINGS STATUS ================= -->
+
+    <div
+        id="settingsStatus"
+        class="settings-status"
+        style="display:none;"
+    >
+        Settings saved successfully.
+    </div>
+
+</section>
+    </main>
+
+</div>
+
+
+<script src="/static/script.js"></script>
+
+</body>
+</html>
