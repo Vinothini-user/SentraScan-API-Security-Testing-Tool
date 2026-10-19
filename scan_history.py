@@ -2,18 +2,17 @@ import os
 import json
 from datetime import datetime
 
-# -------------------------------------------------
-# CONFIG
-# -------------------------------------------------
 BLOB_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
-
-# Local fallback (works on Vercel because /tmp is writable)
 REPORT_FOLDER = os.path.join("/tmp", "reports")
 
-
 def _use_blob():
-    return bool(BLOB_TOKEN)
-
+    if not BLOB_TOKEN:
+        return False
+    try:
+        import vercel_blob
+        return True
+    except ImportError:
+        return False
 
 # -------------------------------------------------
 # SAVE REPORT
